@@ -1,0 +1,1 @@
+Read me file for the directory that contains files for my class assessmenents on Regular Expressions.
