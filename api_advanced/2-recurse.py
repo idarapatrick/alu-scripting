@@ -1,49 +1,39 @@
 #!/usr/bin/python3
-"""
-Script that queries the reddit API
-returns a list containing the titles of all hot articles for a given subreddit
-"""
+"""Return a list containing the titles
+ of all hot articles for a given subreddit"""
 
-import json
 import requests
-import sys
+
+headers = {'User-Agent': 'MyAPI/0.0.1'}
 
 
-def recurse(subreddit, hot_list=None, after=None):
-    if hot_list is None:
-        hot_list = []
+def recurse(subreddit, after="", hot_list=[], page_counter=0):
 
-    url = "https://www.reddit.com/r/{}/hot.json?limit=100".format(subreddit)
-    headers = {"User-agent": "myRedditScript/1.0"}
-    params = {'after': after} if after else {}
+    subreddit_url = "https://reddit.com/r/{}/hot.json".format(subreddit)
 
-    response = requests.get(url, headers=headers,
-                            params=params, allow_redirects=False)
+    parameters = {'limit': 100, 'after': after}
+    response = requests.get(subreddit_url, headers=headers, params=parameters)
 
     if response.status_code == 200:
-        data = response.json()
-        if 'data' in data and 'children' in data['data']:
-            new_posts = data['data']['children']
-            hot_list.extend([post['data']['title'] for post in new_posts])
+        json_data = response.json()
 
-            after = data['data']['after']
-            if after:
-                return recurse(subreddit, hot_list, after)
-            else:
-                return hot_list
+        for child in json_data.get('data').get('children'):
+            title = child.get('data').get('title')
+            hot_list.append(title)
+
+        after = json_data.get('data').get('after')
+        if after is not None:
+
+            page_counter += 1
+            # print(len(hot_list))
+            return recurse(subreddit, after=after,
+                           hot_list=hot_list, page_counter=page_counter)
         else:
-            return None
+            return hot_list
 
     else:
         return None
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Please pass an argument")
-    else:
-        result = recurse(sys.argv[1])
-        if result is not None:
-            print(len(result))
-        else:
-            print("None")
+if __name__ == '__main__':
+    print(recurse("recursor"))
