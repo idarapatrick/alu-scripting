@@ -1,1 +1,1 @@
-## Read me file for API Advanced directory
+## Directory for API Advanced class assessments. 
